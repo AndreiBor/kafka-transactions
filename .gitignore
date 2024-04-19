@@ -1,0 +1,6 @@
+# Project exclude paths
+/core/target/
+/DepositService/target/
+/mockservice/target/
+/TransferService/target/
+/WithdrawalService/target/

@@ -10,10 +10,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import by.javaguru.estore.transfers.error.TransferServiceException;
 import by.javaguru.estore.transfers.model.TransferRestModel;
+
+import java.net.ConnectException;
 
 @Service
 public class TransferServiceImpl implements TransferService {
@@ -31,12 +34,12 @@ public class TransferServiceImpl implements TransferService {
 	}
 
 	@Override
+	@Transactional
 	public boolean transfer(TransferRestModel transferRestModel) {
 		WithdrawalRequestedEvent withdrawalEvent = new WithdrawalRequestedEvent(transferRestModel.getSenderId(),
 				transferRestModel.getRecepientId(), transferRestModel.getAmount());
 		DepositRequestedEvent depositEvent = new DepositRequestedEvent(transferRestModel.getSenderId(),
 				transferRestModel.getRecepientId(), transferRestModel.getAmount());
-
 		try {
 			kafkaTemplate.send(environment.getProperty("withdraw-money-topic", "withdraw-money-topic"),
 					withdrawalEvent);
