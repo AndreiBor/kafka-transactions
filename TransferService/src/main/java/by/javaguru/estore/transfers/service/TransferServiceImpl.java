@@ -33,7 +33,7 @@ public class TransferServiceImpl implements TransferService {
         this.restTemplate = restTemplate;
     }
 
-    /*@Override
+    @Override
     @Transactional
     public boolean transfer(TransferRestModel transferRestModel) {
         WithdrawalRequestedEvent withdrawalEvent = new WithdrawalRequestedEvent(transferRestModel.getSenderId(),
@@ -51,37 +51,6 @@ public class TransferServiceImpl implements TransferService {
 
             kafkaTemplate.send(environment.getProperty("deposit-money-topic", "deposit-money-topic"), depositEvent);
             LOGGER.info("Sent event to deposit topic");
-
-        } catch (Exception ex) {
-            LOGGER.error(ex.getMessage(), ex);
-            throw new TransferServiceException(ex);
-        }
-
-        return true;
-    }*/
-
-    @Override
-    @Transactional
-    public boolean transfer(TransferRestModel transferRestModel) {
-        WithdrawalRequestedEvent withdrawalEvent = new WithdrawalRequestedEvent(transferRestModel.getSenderId(),
-                transferRestModel.getRecepientId(), transferRestModel.getAmount());
-        DepositRequestedEvent depositEvent = new DepositRequestedEvent(transferRestModel.getSenderId(),
-                transferRestModel.getRecepientId(), transferRestModel.getAmount());
-
-        try {
-            boolean result = kafkaTemplate.executeInTransaction(t -> {
-
-                t.send(environment.getProperty("withdraw-money-topic", "withdraw-money-topic"),
-                        withdrawalEvent);
-                LOGGER.info("Sent event to withdrawal topic.");
-
-                t.send(environment.getProperty("deposit-money-topic", "deposit-money-topic"), depositEvent);
-                LOGGER.info("Sent event to deposit topic");
-
-                return true;
-            });
-
-            callRemoteServce();
 
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage(), ex);
